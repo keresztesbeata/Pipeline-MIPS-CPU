@@ -58,10 +58,8 @@ end MipsCU;
 architecture Behavioral of MipsCU is
 
 type t_instr is (i_NOP, i_NAND, i_SUB, i_LWR, i_SWR, i_SLLV, i_SRLV, i_MOV, i_BEZR, i_JR, i_JALR, i_ORI, i_ADDI, i_LB, i_SB, i_BGT, i_BLTZAL, i_LUI, i_ROL, i_ROR, i_LWPI, i_SWPI, i_SLTI, i_SWAPM, i_ADDM, i_JAL);
-signal instr : t_instr := i_NOP;
 
 type t_alu_op is (op_OR, op_AND, op_NAND, op_SLL, op_SRL, op_ROL, op_ROR, op_ADD, op_SUB, op_SLT, op_PASS_B, op_X);
-signal alu_op: t_alu_op;
 
 type t_instr_to_alu_map is array(t_instr'left to t_instr'right) of t_alu_op;
 signal instr_to_alu_lut : t_instr_to_alu_map := (
@@ -107,7 +105,7 @@ end computeInstructionIndex;
 
 begin
 
-CONTROL_LOGIC:process(instr)
+CONTROL_LOGIC:process(opcode, funct)
 variable instr: t_instr := i_NOP;
 variable alu_op: t_alu_op := op_X;  
 begin
@@ -166,43 +164,5 @@ begin
         when i_BGT => Bgt <= '1';
     end case;
 end process;
-
-
---IDENTIFY_INSTR: process(opcode, funct)
---begin
---    case opcode is
---        when "000000" => 
---            case funct is
---                when "000000" => instr <= i_NOP;
---                when "000001" => instr <= i_NAND;
---                when "000010" => instr <= i_SUB;
---                when "000011" => instr <= i_LWR;
---                when "000100" => instr <= i_SWR;
---                when "000101" => instr <= i_SLLV;
---                when "000110" => instr <= i_SRLV;
---                when "000111" => instr <= i_MOV;
---                when "001000" => instr <= i_BEZR;
---                when "001001" => instr <= i_JR;
---                when "001010" => instr <= i_JALR;
---                when others => instr <= i_NOP;
---            end case;    
---        when "000001" => instr <= i_ORI;
---        when "000010" => instr <= i_ADDI;
---        when "000011" => instr <= i_LB;
---        when "000100" => instr <= i_SB;
---        when "000101" => instr <= i_BGTZ;
---        when "000110" => instr <= i_BLTZAL;
---        when "000111" => instr <= i_LUI;
---        when "001000" => instr <= i_ROL;
---        when "001001" => instr <= i_ROR;
---        when "001010" => instr <= i_LWPI;
---        when "001011" => instr <= i_SWPI;
---        when "001100" => instr <= i_SLTI;
---        when "001101" => instr <= i_SWAPM;
---        when "001110" => instr <= i_ADDM;
---        when "001111" => instr <= i_JAL;
---        when others => instr <= i_NOP;
---    end case;
---end process;
 
 end Behavioral;
