@@ -3,16 +3,16 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 package MipsDefinitions is
 
-constant INSTR_MEM_SIZE : natural := 30;
+constant c_instr_mem_size : natural := 30;
 
-type t_instr_mem_array is array(0 to INSTR_MEM_SIZE-1) of std_logic_vector(31 downto 0);
+type t_instr_mem_array is array(0 to c_instr_mem_size-1) of std_logic_vector(31 downto 0);
 
 constant c_mips_instruction_set :t_instr_mem_array := (
 B"000000_00000_00000_00000_00000_000000", --Nop	
-B"000000_00000_00000_00000_00000_000001", --Nand
-B"000000_00000_00000_00000_00000_000010", --Sub
-B"000000_00000_00000_00000_00000_000001", --Oi
-B"000000_00000_00000_00000_00000_000010", --Addi
+B"000000_00001_00010_00011_00000_000001", --Nand
+B"000000_00001_00010_00011_00000_000010", --Sub
+B"000001_00001_00010_0000_0000_0000_0000", --Ori
+B"000010_00001_00010_0000_0000_0000_0000", --Addi
 others => (others => '0')
 );
 
