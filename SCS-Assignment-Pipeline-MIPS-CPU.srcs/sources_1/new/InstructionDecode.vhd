@@ -17,7 +17,7 @@ entity InstructionDecode is
       jump_address:      out std_logic_vector(31 downto 0);
       register_address:  out std_logic_vector(31 downto 0);
       PCSrc:             out std_logic;
-      if_control:        out t_if_control_signals;
+      id_if_control:     out t_if_control_signals;
       id_ex_pc:          out std_logic_vector(31 downto 0); 
       id_ex_A:           out std_logic_vector(31 downto 0);
       id_ex_B:           out std_logic_vector(31 downto 0);
@@ -70,6 +70,8 @@ CU: ControlUnit port map(
       mem_control => mem_control,
       wb_control => wb_control  
 );    
+
+id_if_control <= if_control;
 
 jump_address <= pc(31 downto 26) & instruction(25 downto 0);
 

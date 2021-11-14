@@ -41,7 +41,7 @@ component InstructionDecode is
       jump_address:      out std_logic_vector(31 downto 0);
       register_address:  out std_logic_vector(31 downto 0);
       PCSrc:             out std_logic;
-      if_control:        out t_if_control_signals;
+      id_if_control:     out t_if_control_signals;
       id_ex_pc:          out std_logic_vector(31 downto 0); 
       id_ex_A:           out std_logic_vector(31 downto 0);
       id_ex_B:           out std_logic_vector(31 downto 0);
@@ -101,7 +101,7 @@ ID_UNIT: InstructionDecode port map (
       jump_address => jump_address,
       register_address => register_address,
       PCSrc => PCSrc,
-      if_control => if_control,
+      id_if_control => if_control,
       id_ex_pc => id_ex_pc, 
       id_ex_A => A,
       id_ex_B => B,
