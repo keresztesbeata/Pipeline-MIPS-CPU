@@ -8,7 +8,7 @@ entity InstructionDecode is
       clk:               in std_logic;
       rst:               in std_logic;
       Flush:             in std_logic;
-      RegWrite:          in std_logic; -- comes from WB pipel stage
+      RegWrite:          in std_logic; -- comes from WB pipeline stage
       pc:                in std_logic_vector(31 downto 0);
       instruction:       in std_logic_vector(31 downto 0);
       write_addr:        in std_logic_vector(31 downto 0);
@@ -23,9 +23,8 @@ entity InstructionDecode is
       id_ex_B:           out std_logic_vector(31 downto 0);
       id_ex_imm:         out std_logic_vector(31 downto 0);
       id_ex_sa:          out std_logic_vector(4 downto 0);
-      id_ex_func:        out std_logic_vector(5 downto 0);
-      id_ex_rt:          out std_logic_vector(5 downto 0);
-      id_ex_rd:          out std_logic_vector(5 downto 0);
+      id_ex_rt:          out std_logic_vector(4 downto 0);
+      id_ex_rd:          out std_logic_vector(4 downto 0);
       id_ex_control:     out t_ex_control_signals;
       id_mem_control:    out t_mem_control_signals;
       id_wb_control:     out t_wb_control_signals    
@@ -101,7 +100,6 @@ begin
 end process;
  
 REGISTER_FILE: process(clk, rst)
-variable read_addr0, read_addr1: std_logic_vector(31 downto 0);
 begin
     if rst = '1' then
        reg_file_data <= c_reg_file_init_data;
@@ -112,6 +110,11 @@ begin
     end if;        
 end process;
 
+read_data0 <= reg_file_data(conv_integer(instruction(25 downto 21)));
+read_data1 <= reg_file_data(conv_integer(instruction(20 downto 16)));
+
+register_address <= read_data0;
+
 ID_EX_PIPE_REGISTER: process(clk, Flush)
 begin
     if Flush = '1' then
@@ -120,7 +123,6 @@ begin
        id_ex_B <= (others => '0');
        id_ex_imm <= (others => '0');
        id_ex_sa <= (others => '0');
-       id_ex_func <= (others => '0');
        id_ex_rt <= (others => '0');
        id_ex_rd <= (others => '0');
     elsif rising_edge(clk) then
@@ -129,7 +131,6 @@ begin
        id_ex_B <= reg_file_data(conv_integer(instruction(20 downto 16)));
        id_ex_imm <= ext_imm;
        id_ex_sa <= instruction(10 downto 6);
-       id_ex_func <= instruction(5 downto 0);
        id_ex_rt <= instruction(20 downto 16);
        id_ex_rd <= instruction(15 downto 11);
        id_ex_control <= ex_control;

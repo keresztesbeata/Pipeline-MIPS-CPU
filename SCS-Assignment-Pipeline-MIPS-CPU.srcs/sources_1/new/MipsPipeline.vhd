@@ -47,9 +47,8 @@ component InstructionDecode is
       id_ex_B:           out std_logic_vector(31 downto 0);
       id_ex_imm:         out std_logic_vector(31 downto 0);
       id_ex_sa:          out std_logic_vector(4 downto 0);
-      id_ex_func:        out std_logic_vector(5 downto 0);
-      id_ex_rt:          out std_logic_vector(5 downto 0);
-      id_ex_rd:          out std_logic_vector(5 downto 0);
+      id_ex_rt:          out std_logic_vector(4 downto 0);
+      id_ex_rd:          out std_logic_vector(4 downto 0);
       id_ex_control:     out t_ex_control_signals;
       id_mem_control:    out t_mem_control_signals;
       id_wb_control:     out t_wb_control_signals    
@@ -69,8 +68,7 @@ signal JumpSel, Jump, PCSrc, Flush:                       std_logic;
 signal rf_write_addr, rf_write_data:                      std_logic_vector(31 downto 0);
 signal A, B, imm:                                         std_logic_vector(31 downto 0);
 signal sa:                                                std_logic_vector(4 downto 0);
-signal func:                                              std_logic_vector(5 downto 0);
-signal rt, rd:                                            std_logic_vector(5 downto 0);
+signal rt, rd:                                            std_logic_vector(4 downto 0);
 
 begin
 
@@ -107,7 +105,6 @@ ID_UNIT: InstructionDecode port map (
       id_ex_B => B,
       id_ex_imm => imm,
       id_ex_sa => sa,
-      id_ex_func => func,
       id_ex_rt => rt,
       id_ex_rd => rd,
       id_ex_control => id_ex_control,

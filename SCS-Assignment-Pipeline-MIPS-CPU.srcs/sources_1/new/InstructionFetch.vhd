@@ -43,9 +43,7 @@ begin
     if rst = '1' then
         pc <= (others => '0');
     elsif rising_edge(clk) then
-        if if_control.PCWrite = '1' then
-            pc <= pc_in; 
-        end if;
+        pc <= pc_in; 
     end if; 
 end process;
 
