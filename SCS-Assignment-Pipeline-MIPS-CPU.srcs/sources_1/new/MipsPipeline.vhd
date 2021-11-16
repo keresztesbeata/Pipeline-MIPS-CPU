@@ -6,7 +6,8 @@ use work.MipsDefinitions.all;
 entity MipsPipeline is
   Port (
   clk:  in std_logic;
-  rst:  in std_logic
+  btnU:  in std_logic
+--  led: out std_logic_vector(15 downto 0)
   );
 end MipsPipeline;
 
@@ -55,6 +56,25 @@ component InstructionDecode is
    );
 end component;      
 
+component Execute is
+  Port ( 
+      clk:                  in std_logic;
+      Flush:                in std_logic;
+      ex_control:           in t_ex_control_signals;
+      pc:                   in std_logic_vector(31 downto 0);
+      A:                    in std_logic_vector(31 downto 0);
+      B:                    in std_logic_vector(31 downto 0);
+      imm:                  in std_logic_vector(31 downto 0);
+      sa:                   in std_logic_vector(4 downto 0);
+      rt:                   in std_logic_vector(4 downto 0);
+      rd:                   in std_logic_vector(4 downto 0); 
+      ex_mem_pc:            out std_logic_vector(31 downto 0);
+      ex_mem_AluResult:     out std_logic_vector(31 downto 0);
+      ex_mem_RegWriteAddr:  out std_logic_vector(4 downto 0)
+  );
+end component;
+  
+signal rst: std_logic;
 -- control signals
 signal if_control: t_if_control_signals;
 signal id_ex_control: t_ex_control_signals;
@@ -62,17 +82,21 @@ signal id_mem_control, ex_mem_control: t_mem_control_signals;
 signal id_wb_control, ex_wb_control, mem_wb_control: t_wb_control_signals;
 
 signal branch_address, jump_address, register_address:    std_logic_vector(31 downto 0);
-signal if_id_pc, id_ex_pc:                                std_logic_vector(31 downto 0);
+signal if_id_pc, id_ex_pc, ex_mem_pc:                     std_logic_vector(31 downto 0);
 signal instruction:                                       std_logic_vector(31 downto 0);
 signal JumpSel, Jump, PCSrc, Flush:                       std_logic;
 signal rf_write_addr, rf_write_data:                      std_logic_vector(31 downto 0);
 signal A, B, imm:                                         std_logic_vector(31 downto 0);
 signal sa:                                                std_logic_vector(4 downto 0);
 signal rt, rd:                                            std_logic_vector(4 downto 0);
+signal AluResult:                                         std_logic_vector(31 downto 0);  
+signal ex_mem_RegWriteAddr:                               std_logic_vector(4 downto 0);
 
 begin
 
-IF_UNIT: InstructionFetch port map
+rst <= btnU;
+
+IF_STAGE: InstructionFetch port map
 (
     clk => clk,
     rst => rst,
@@ -86,7 +110,7 @@ IF_UNIT: InstructionFetch port map
     if_id_instruction => instruction
 );
 
-ID_UNIT: InstructionDecode port map (
+ID_STAGE: InstructionDecode port map (
       clk => clk,
       rst => rst,
       Flush => Flush,
@@ -111,5 +135,28 @@ ID_UNIT: InstructionDecode port map (
       id_mem_control => id_mem_control,
       id_wb_control => id_wb_control
       );
+      
+EX_STAGE: Execute port map(
+      clk => clk,
+      Flush => Flush,
+      ex_control => id_ex_control,
+      pc => id_ex_pc,
+      A => A,
+      B => B,
+      imm => imm,
+      sa => sa,
+      rt => rt,
+      rd => rd, 
+      ex_mem_pc => ex_mem_pc,
+      ex_mem_AluResult => AluResult,
+      ex_mem_RegWriteAddr => ex_mem_RegWriteAddr
+);   
     
+--led(0) <= id_ex_control.AluSrc;
+--led(1) <= id_wb_control.RegWrite;
+--led(3 downto 2) <= id_ex_control.RegDest;
+--led(6 downto 4) <= id_wb_control.MemToReg;
+--led(7) <= id_wb_control.LinkRetAddr;
+--led(15 downto 8) <= (others => '0');       
+
 end Behavioral;
