@@ -70,9 +70,30 @@ component Execute is
       rd:                   in std_logic_vector(4 downto 0); 
       ex_mem_pc:            out std_logic_vector(31 downto 0);
       ex_mem_AluResult:     out std_logic_vector(31 downto 0);
+      ex_mem_B:             out std_logic_vector(31 downto 0);
       ex_mem_RegWriteAddr:  out std_logic_vector(4 downto 0)
   );
 end component;
+
+component Memory is
+  Port ( 
+      clk:                in std_logic;
+      rst:                in std_logic;
+      Flush:              in std_logic;
+      mem_control:        in t_mem_control_signals;
+      pc:                 in std_logic_vector(31 downto 0);
+      AluResult:          in std_logic_vector(31 downto 0);
+      B:                  in std_logic_vector(31 downto 0);
+      RegWriteAddr:       in std_logic_vector(4 downto 0);
+      mem_wb_pc:          out std_logic_vector(31 downto 0);
+      mem_wb_MemData:     out std_logic_vector(31 downto 0);
+      mem_wb_AluResult:   out std_logic_vector(31 downto 0);
+      mem_wb_Binc:        out std_logic_vector(31 downto 0);
+      mem_wb_MemDataInc:  out std_logic_vector(31 downto 0);
+      mem_wb_MemDataAdded:out std_logic_vector(31 downto 0);
+      mem_wb_RegWriteAddr:out std_logic_vector(4 downto 0)
+      );
+end component;      
   
 signal rst: std_logic;
 -- control signals
@@ -89,8 +110,16 @@ signal rf_write_addr, rf_write_data:                      std_logic_vector(31 do
 signal A, B, imm:                                         std_logic_vector(31 downto 0);
 signal sa:                                                std_logic_vector(4 downto 0);
 signal rt, rd:                                            std_logic_vector(4 downto 0);
-signal AluResult:                                         std_logic_vector(31 downto 0);  
+signal AluResult:                                         std_logic_vector(31 downto 0);
+signal MemWriteData:                                      std_logic_vector(31 downto 0);  
 signal ex_mem_RegWriteAddr:                               std_logic_vector(4 downto 0);
+signal mem_wb_pc:                                         std_logic_vector(31 downto 0);
+signal MemData:                                           std_logic_vector(31 downto 0);
+signal mem_wb_AluResult:                                  std_logic_vector(31 downto 0);
+signal Binc:                                              std_logic_vector(31 downto 0);
+signal MemDataInc:                                        std_logic_vector(31 downto 0);
+signal MemDataAdded:                                      std_logic_vector(31 downto 0);
+signal mem_wb_RegWriteAddr:                               std_logic_vector(31 downto 0);
 
 begin
 
@@ -149,8 +178,27 @@ EX_STAGE: Execute port map(
       rd => rd, 
       ex_mem_pc => ex_mem_pc,
       ex_mem_AluResult => AluResult,
+      ex_mem_B => MemWriteData,
       ex_mem_RegWriteAddr => ex_mem_RegWriteAddr
 );   
+
+MEM_STAGE: Memory port map( 
+      clk => clk,
+      rst => rst,
+      Flush => Flush,
+      mem_control => ex_mem_control,
+      pc => ex_mem_pc,
+      AluResult => AluResult,
+      B => MemWriteData,
+      RegWriteAddr => ex_mem_RegWriteAddr,
+      mem_wb_pc => mem_wb_pc,
+      mem_wb_MemData => MemData,
+      mem_wb_AluResult => mem_wb_AluResult,
+      mem_wb_Binc => Binc,
+      mem_wb_MemDataInc => MemDataInc,
+      mem_wb_MemDataAdded => MemDataAdded,
+      mem_wb_RegWriteAddr => mem_wb_RegWriteAddr
+);
     
 --led(0) <= id_ex_control.AluSrc;
 --led(1) <= id_wb_control.RegWrite;

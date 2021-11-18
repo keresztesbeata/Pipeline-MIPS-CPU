@@ -17,6 +17,7 @@ entity Execute is
       rd:                   in std_logic_vector(4 downto 0); 
       ex_mem_pc:            out std_logic_vector(31 downto 0);
       ex_mem_AluResult:     out std_logic_vector(31 downto 0);
+      ex_mem_B:             out std_logic_vector(31 downto 0);
       ex_mem_RegWriteAddr:  out std_logic_vector(4 downto 0)
   );
 end Execute;

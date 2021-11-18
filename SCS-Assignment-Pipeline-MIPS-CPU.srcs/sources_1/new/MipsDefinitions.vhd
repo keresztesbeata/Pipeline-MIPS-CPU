@@ -5,6 +5,7 @@ package MipsDefinitions is
 
 constant c_instr_mem_size: natural := 30;
 constant c_reg_file_size: natural := 30;
+constant c_data_mem_size: natural := 30;
 
 type t_instr_mem_array is array(0 to c_instr_mem_size-1) of std_logic_vector(31 downto 0);
 type t_reg_file_array is array(0 to c_reg_file_size-1) of std_logic_vector(31 downto 0);
@@ -65,7 +66,6 @@ type t_alu_op is (op_OR, op_AND, op_NAND, op_SLL, op_SRL, op_ROL, op_ROR, op_ADD
 
 type t_instr_to_alu_map is array(t_instr'left to t_instr'right) of t_alu_op;
 
-
 type t_if_control_signals is record
      Bezr:          std_logic;
      Bltzal:        std_logic;
@@ -99,6 +99,27 @@ type t_wb_control_signals is record
 	  LinkRetAddr:  std_logic;
 end record t_wb_control_signals;
 
+type t_data_mem_array is array(0 to c_data_mem_size-1) of std_logic_vector(31 downto 0);
+
+constant c_data_mem_init_data: t_data_mem_array := (
+X"0000_0000",
+X"0001_0001",
+X"0002_0002",
+X"0003_0003",
+X"0004_0004",
+X"0005_0005",
+X"0006_0006",
+X"0007_0007",
+X"0008_0008",
+X"0009_0009",
+X"000A_000A",
+X"000B_000B",
+X"000C_000C",
+X"000D_000D",
+X"000E_000E",
+X"000F_000F",
+others => (others => '0')
+);
 
 end MipsDefinitions;
 
