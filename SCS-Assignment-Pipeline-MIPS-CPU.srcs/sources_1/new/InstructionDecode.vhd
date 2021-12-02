@@ -11,7 +11,7 @@ entity InstructionDecode is
       RegWrite:          in std_logic; -- comes from WB pipeline stage
       pc:                in std_logic_vector(31 downto 0);
       instruction:       in std_logic_vector(31 downto 0);
-      write_addr:        in std_logic_vector(31 downto 0);
+      write_addr:        in std_logic_vector(4 downto 0);
       write_data:        in std_logic_vector(31 downto 0);
       branch_address:    out std_logic_vector(31 downto 0);
       jump_address:      out std_logic_vector(31 downto 0);
@@ -46,9 +46,20 @@ component ControlUnit is
       );    
 end component;      
 
+component Comparator
+Port ( 
+      a:        in std_logic_vector(31 downto 0);
+      b:        in std_logic_vector(31 downto 0);
+      less:     out std_Logic;
+      equal:    out std_logic;
+      greater:  out std_logic
+  );
+end component;
+ 
 signal ext_imm:                 std_logic_vector(31 downto 0):= (others => '0');
 signal less, equal, greater:    std_logic := '0';
 signal read_data0, read_data1:  std_logic_vector(31 downto 0);
+signal comp_b:                  std_logic_vector(31 downto 0);
 signal reg_file_data:           t_reg_file_array := c_reg_file_init_data;
 
 signal if_control:              t_if_control_signals;
@@ -72,32 +83,25 @@ CU: ControlUnit port map(
 
 id_if_control <= if_control;
 
-jump_address <= pc(31 downto 26) & instruction(25 downto 0);
+jump_address <= "000000" & instruction(25 downto 0);
 
 ext_imm(15 downto 0) <= instruction(15 downto 0);
 -- zero or sign extend immediate
 ext_imm(31 downto 16) <= (others => instruction(15)) when id_control.ExtOp = '1' else (others => '0');
 
-branch_address <= pc + ext_imm;
-
+branch_address <= pc + read_data1 when if_control.Bezr = '1' else pc + ext_imm;
+ 
 PCSrc <= (if_control.Bltzal and less) or (if_control.Bezr and equal) or (if_control.Bgt and greater);
 
-COMPARATOR: process(read_data0,read_data1)
-variable a, b: integer;
-begin
-    a := conv_integer(read_data0);
-    b := conv_integer(read_data1);
-    less <= '0';
-    equal <= '0';
-    greater <= '0';
-    if a < b then
-        less <= '1';
-    elsif a = b then
-        equal <= '1';
-    else
-        greater <= '1';
-    end if;            
-end process;
+comp_b <= (others => '0') when if_control.Bezr = '1' or if_control.Bltzal = '1' else read_data1;
+
+COMPARATOR_UNIT: Comparator port map(
+    a => read_data0,
+    b => comp_b,
+    less => less,
+    equal => equal,
+    greater => greater
+    );
  
 REGISTER_FILE: process(clk, rst)
 begin
@@ -127,8 +131,8 @@ begin
        id_ex_rd <= (others => '0');
     elsif rising_edge(clk) then
        id_ex_pc <= pc + 1;
-       id_ex_A <= reg_file_data(conv_integer(instruction(25 downto 21)));
-       id_ex_B <= reg_file_data(conv_integer(instruction(20 downto 16)));
+       id_ex_A <= read_data0;
+       id_ex_B <= read_data1;
        id_ex_imm <= ext_imm;
        id_ex_sa <= instruction(10 downto 6);
        id_ex_rt <= instruction(20 downto 16);

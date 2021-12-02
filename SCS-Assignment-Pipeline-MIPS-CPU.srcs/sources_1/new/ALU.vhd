@@ -78,7 +78,7 @@ rot_amount := conv_integer(b);
         when op_PASS_B => 
             result <= b;    
             
-        when others => -- PASS A
+        when op_PASS_A => 
             result <= a;
             
     end case;

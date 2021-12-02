@@ -9,6 +9,7 @@ entity Memory is
       rst:                in std_logic;
       Flush:              in std_logic;
       mem_control:        in t_mem_control_signals;
+      wb_control:         in t_wb_control_signals;
       pc:                 in std_logic_vector(31 downto 0);
       AluResult:          in std_logic_vector(31 downto 0);
       B:                  in std_logic_vector(31 downto 0);
@@ -19,7 +20,8 @@ entity Memory is
       mem_wb_Binc:        out std_logic_vector(31 downto 0);
       mem_wb_MemDataInc:  out std_logic_vector(31 downto 0);
       mem_wb_MemDataAdded:out std_logic_vector(31 downto 0);
-      mem_wb_RegWriteAddr:out std_logic_vector(4 downto 0)
+      mem_wb_RegWriteAddr:out std_logic_vector(4 downto 0);
+      mem_wb_control:     out t_wb_control_signals
       );
 end Memory;
 
@@ -32,7 +34,7 @@ signal mem_write_byte_data:  std_logic_vector(31 downto 0);
 
 begin
 
-mem_write_byte_data <= B when mem_control.SB = '0' else X"000000" & B(7 downto 0);
+mem_write_byte_data <= B when mem_control.SB = '0' else (X"000000" & B(7 downto 0));
 
 process(clk,rst)
 begin
@@ -46,7 +48,7 @@ begin
 end process;
 
 mem_read_data <= data_mem(conv_integer(AluResult)) when mem_control.MemRead = '1';
-mem_read_byte_data <= mem_read_data when mem_control.LB = '0' else X"000000" & mem_read_data(7 downto 0);
+mem_read_byte_data <= mem_read_data when mem_control.LB = '0' else (X"000000" & mem_read_data(7 downto 0));
 
 MEM_WB_PIPE_REGISTER: process(clk,Flush)
 begin
@@ -58,6 +60,7 @@ begin
         mem_wb_Binc <= (others => '0');
         mem_wb_MemDataAdded <= (others => '0');
         mem_wb_RegWriteAddr <= (others => '0');
+        mem_wb_control <= (RegWrite => '0', LinkRetAddr => '0', MemToReg => "000");
     elsif rising_edge(clk) then
         mem_wb_pc <= pc;
         mem_wb_AluResult <= AluResult;
@@ -66,6 +69,7 @@ begin
         mem_wb_Binc <= B + 1;
         mem_wb_MemDataAdded <= mem_read_data + B;
         mem_wb_RegWriteAddr <= RegWriteAddr;
+        mem_wb_control <= wb_control;
    end if;         
 end process;
 

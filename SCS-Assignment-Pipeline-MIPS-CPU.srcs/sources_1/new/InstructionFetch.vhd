@@ -12,7 +12,7 @@ entity InstructionFetch is
       PCSrc:             in std_logic;
       branch_address:    in std_logic_vector(31 downto 0);
       jump_address:      in std_logic_vector(31 downto 0);
-      register_address:  in std_logic_vector(31 downto 0);
+      register_address:        in std_logic_vector(31 downto 0);
       if_id_pc:          out std_logic_vector(31 downto 0);
       if_id_instruction: out std_logic_vector(31 downto 0) 
   );
@@ -29,14 +29,11 @@ begin
 
 Jump <= if_control.Jal or if_control.Jr or if_control.Jalr;
 JumpSel <= if_control.Jalr or if_control.Jr; 
-BranchSel <= if_control.Bezr;
 
 selected_jump_addr <= register_address when JumpSel = '1' else jump_address;
-selected_branch_addr <= register_address when BranchSel = '1' else branch_address;
+selected_branch_addr <= branch_address when PCSrc = '1' else pc + 1; 
                         
-pc_in <= selected_jump_addr when Jump = '1' 
-         else selected_branch_addr when PCSrc = '1'
-         else pc + 1;                        
+pc_in <= selected_jump_addr when Jump = '1' else selected_branch_addr;                        
 
 PROGRAM_COUNTER: process(clk, rst)
 begin
