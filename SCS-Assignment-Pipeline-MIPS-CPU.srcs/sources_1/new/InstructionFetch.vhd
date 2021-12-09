@@ -6,6 +6,7 @@ use work.MipsDefinitions.all;
 entity InstructionFetch is
   Port (
       clk:               in std_logic;
+      PCWrite:           in std_logic;
       rst:               in std_logic;
       Flush:             in std_logic;
       if_control:        in t_if_control_signals;
@@ -40,7 +41,9 @@ begin
     if rst = '1' then
         pc <= (others => '0');
     elsif rising_edge(clk) then
-        pc <= pc_in; 
+        if PCWrite = '1' then
+            pc <= pc_in; 
+        end if;
     end if; 
 end process;
 

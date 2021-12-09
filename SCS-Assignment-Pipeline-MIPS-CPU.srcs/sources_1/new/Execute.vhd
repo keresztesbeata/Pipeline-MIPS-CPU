@@ -32,13 +32,13 @@ component ALU is
    Port ( a:           in std_logic_vector(31 downto 0);
           b:            in std_logic_vector(31 downto 0);
           AluOp:        in t_alu_op;
-          sh_amount:    in integer;
+          sh_amount:    in natural;
           result:       out std_logic_vector(31 downto 0));
 end component;          
 
 signal alu_result:      std_logic_vector(31 downto 0);
 signal reg_write_addr:  std_logic_vector(4 downto 0);
-signal shift_amount:    integer := 0;
+signal shift_amount:    natural := 0;
 signal AluSrcB:         std_logic_vector(31 downto 0);
 
 begin
