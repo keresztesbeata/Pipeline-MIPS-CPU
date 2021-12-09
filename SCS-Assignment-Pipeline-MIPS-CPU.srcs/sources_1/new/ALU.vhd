@@ -1,13 +1,13 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
 use work.MipsDefinitions.all;
 
 entity ALU is
   Port (  a:            in std_logic_vector(31 downto 0);
           b:            in std_logic_vector(31 downto 0);
           AluOp:        in t_alu_op;
-          sh_amount:    in integer;
+          sh_amount:    in natural;
           result:       out std_logic_vector(31 downto 0));
 end ALU;
 
@@ -16,9 +16,21 @@ architecture Behavioral of ALU is
 begin
 
 ALU_COMPUTATIONS: process(a, b, sh_amount, AluOp) 
-variable rot_amount : integer := 0;
+variable rot_amount         : natural := 0;
+variable result_unsigned    : unsigned(31 downto 0) := (others => '0');
+variable a_unsigned         : unsigned(31 downto 0);
+variable b_unsigned         : unsigned(31 downto 0);
+variable result_signed      : signed(31 downto 0) := (others => '0');
+variable a_signed           : signed(31 downto 0);
+variable b_signed           : signed(31 downto 0);
 begin
-rot_amount := conv_integer(b);
+
+    a_unsigned := unsigned(a);
+    b_unsigned := unsigned(b);
+    a_signed := signed(a);
+    b_signed := signed(b);
+    
+    rot_amount := to_integer(unsigned(b));
     case AluOp is
         when op_OR => 
             result <= a or b;
@@ -30,45 +42,29 @@ rot_amount := conv_integer(b);
             result <= a nand b;
             
         when op_SLL => 
-            if (sh_amount > 0) then
-                result(31 downto sh_amount) <= b(31-sh_amount downto 0);
-                if(sh_amount = 1) then
-                    result(0) <= '0';
-                else
-                    result(sh_amount-1 downto 0) <= (others => '0'); 
-                end if;    
-            end if;     
+            result_unsigned := shift_left(b_unsigned, sh_amount);
+            result <= std_logic_vector(result_unsigned);    
             
         when op_SRL => 
-            if (sh_amount > 0) then
-                result(31-sh_amount downto 0) <= b(31 downto sh_amount);
-                if (sh_amount = 1) then
-                    result(31) <= '0';
-                else
-                    result(31 downto 31-sh_amount+1) <= (others => '0');
-                end if;    
-            end if;     
+            result_unsigned := shift_right(b_unsigned, sh_amount);
+            result <= std_logic_vector(result_unsigned);
+            
+        when op_ROL =>    
+            result_unsigned := rotate_left(a_unsigned, rot_amount);
+            result <= std_logic_vector(result_unsigned);
             
         when op_ROR => 
-            -- rotate right by the nr of bits specified in the immediate ( = rot_amount)
-            if (rot_amount > 0) then
-                result(31-rot_amount downto 0) <= a(31 downto rot_amount);
-                result(31 downto 31-rot_amount+1) <= a(rot_amount-1 downto 0);
-            end if;    
+            result_unsigned := rotate_right(a_unsigned, rot_amount);
+            result <= std_logic_vector(result_unsigned);    
             
-        when op_ROL =>
-            -- rotate left by the nr of bits specified in the immediate ( = rot_amount)     
-            if (rot_amount > 0) then
-                result(31 downto rot_amount) <= a(31-rot_amount downto 0);
-                result(rot_amount-1 downto 0) <= a(31 downto 31-rot_amount+1);  
-            end if;
-            
-        when op_ADD => 
-            result <= a + b;
-            
+        when op_ADD =>
+            result_signed := a_signed + b_signed;
+            result <= std_logic_vector(result_signed);
+             
         when op_SUB => 
-            result <= a - b;
-            
+             result_signed := a_signed - b_signed;
+             result <= std_logic_vector(result_signed);
+
         when op_SLT => 
             result(31 downto 0) <= (others => '0');
             if a < b then 
