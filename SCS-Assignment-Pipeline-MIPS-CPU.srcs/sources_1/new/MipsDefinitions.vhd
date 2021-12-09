@@ -3,9 +3,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 package MipsDefinitions is
 
-constant c_instr_mem_size: natural := 131072;
-constant c_reg_file_size: natural := 131072;
-constant c_data_mem_size: natural := 131072;
+constant c_instr_mem_size: natural := 64;
+constant c_reg_file_size: natural := 64;
+constant c_data_mem_size: natural := 64;
 
 type t_instr_mem_array is array(0 to c_instr_mem_size-1) of std_logic_vector(31 downto 0);
 type t_reg_file_array is array(0 to c_reg_file_size-1) of std_logic_vector(31 downto 0);
