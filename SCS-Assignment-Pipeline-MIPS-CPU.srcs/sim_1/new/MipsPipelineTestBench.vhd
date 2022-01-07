@@ -12,6 +12,7 @@ component MipsPipeline is
     btnU:       in std_logic;
     btnD:       in std_logic;
     btnR:       in std_logic;
+    btnC:       in std_logic;
     sw:         in std_logic_vector(15 downto 0);
     an:         out std_logic_vector(3 downto 0);
     seg:        out std_logic_vector(6 downto 0);
@@ -23,6 +24,7 @@ signal clk:        std_logic;
 signal btnU:       std_logic;
 signal btnD:       std_logic;
 signal btnR:       std_logic;
+signal btnC:       std_logic;
 signal sw:         std_logic_vector(15 downto 0);
 signal an:         std_logic_vector(3 downto 0);
 signal seg:        std_logic_vector(6 downto 0);
@@ -35,6 +37,7 @@ MIPS_UT: MipsPipeline port map(
     btnU => btnU,
     btnD => btnD,
     btnR => btnR,
+    btnC => btnC,
     sw => sw,
     an => an,
     seg => seg,
@@ -54,7 +57,7 @@ begin
     btnU <= '1';
     wait for 200ns;
     btnU <= '0';
-    wait;
+    wait for 200ns;
 end process;
 
 end Behavioral;

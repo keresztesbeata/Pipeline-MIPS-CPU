@@ -13,7 +13,7 @@ entity InstructionFetch is
       PCSrc:             in std_logic;
       branch_address:    in std_logic_vector(31 downto 0);
       jump_address:      in std_logic_vector(31 downto 0);
-      register_address:        in std_logic_vector(31 downto 0);
+      register_address:  in std_logic_vector(31 downto 0);
       if_id_pc:          out std_logic_vector(31 downto 0);
       if_id_instruction: out std_logic_vector(31 downto 0) 
   );

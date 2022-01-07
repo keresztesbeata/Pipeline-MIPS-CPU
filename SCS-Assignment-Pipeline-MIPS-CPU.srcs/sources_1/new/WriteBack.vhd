@@ -12,7 +12,6 @@ entity WriteBack is
       MemData:            in std_logic_vector(31 downto 0);
       MemDataInc:         in std_logic_vector(31 downto 0);
       MemDataAdded:       in std_logic_vector(31 downto 0);
-      RegWriteAddr:       in std_logic_vector(4 downto 0);
       RegWriteData:       out std_logic_vector(31 downto 0)
       );
 end WriteBack;

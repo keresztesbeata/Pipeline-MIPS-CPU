@@ -1,22 +1,11 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
 use work.MipsDefinitions.all;
 
-entity MipsPipeline is
-  Port (
-    clk:        in std_logic;
-    btnU:       in std_logic;
-    btnD:       in std_logic;
-    btnR:       in std_logic;
-    sw:         in std_logic_vector(15 downto 0);
-    an:         out std_logic_vector(3 downto 0);
-    seg:        out std_logic_vector(6 downto 0);
-    led:        out std_logic_vector(15 downto 0)
-  );
-end MipsPipeline;
+entity Mips_Pipe_Stages_Testbench is
+end Mips_Pipe_Stages_Testbench;
 
-architecture Behavioral of MipsPipeline is
+architecture Behavioral of Mips_Pipe_Stages_Testbench is
 
 component InstructionFetch is
  Port (
@@ -136,6 +125,18 @@ component SSD is
     cat:    out std_logic_vector(6 downto 0));
 end component;           
   
+
+signal clk:        std_logic;
+signal btnU:       std_logic;
+signal btnD:       std_logic;
+signal btnR:       std_logic;
+signal btnC:       std_logic;
+signal sw:         std_logic_vector(15 downto 0);
+signal an:         std_logic_vector(3 downto 0);
+signal seg:        std_logic_vector(6 downto 0);
+signal led:        std_logic_vector(15 downto 0);
+    
+
 signal rst:                                               std_logic;
 signal en_pc:                                             std_logic;
 signal Flush:                                             std_logic;
@@ -160,9 +161,9 @@ signal MemData:                                           std_logic_vector(31 do
 signal Binc:                                              std_logic_vector(31 downto 0);
 signal MemDataInc:                                        std_logic_vector(31 downto 0);
 signal MemDataAdded:                                      std_logic_vector(31 downto 0);
+signal RegWriteAddr:                                      std_logic_vector(4 downto 0);
 signal RegWriteAddr_ext:                                  std_logic_vector(31 downto 0);
 signal RegWriteData:                                      std_logic_vector(31 downto 0);
-signal RegWriteAddr:                                      std_logic_vector(4 downto 0);
 
 -- user interface signals
 signal displayed_data:                                    std_logic_vector(31 downto 0);
@@ -176,17 +177,37 @@ begin
 
 rst <= btnU;
 
-BTN_INC_STEP_DEBOUNCER: Debouncer port map(
-    clk => clk, 
-    rst => rst, 
-    d_in => btnR, 
-    q_out => en_pc);
+en_pc <= btnR;
 
-BTN_FLUSH_PIPELINE_DEBOUNCER: Debouncer port map(
-    clk => clk, 
-    rst => rst, 
-    d_in => btnD, 
-    q_out => Flush);
+Flush <= btnD;
+
+process
+begin
+    clk <= '0';
+    wait for 100ns;
+    clk <= '1';
+    wait for 100ns;
+end process;
+
+process
+begin
+    btnR <= '1';
+    wait for 200ns;
+    btnR <= '0';
+    wait for 200ns;
+end process;
+
+process
+begin
+    btnU <= '1';
+    wait for 200ns;
+    btnU <= '0';
+    wait;
+end process;
+
+rst <= btnU;
+Flush <= btnD;
+en_pc <= btnr;
     
 IF_STAGE: InstructionFetch port map (
     clk => clk,
@@ -280,8 +301,6 @@ WB_STAGE: WriteBack port map(
       RegWriteData => RegWriteData
 );    
 
-select_control_signals <= to_integer(unsigned(sw(1 downto 0)));
-
 process(select_control_signals, if_control, id_ex_control, ex_mem_control, mem_wb_control)
 begin
     case select_control_signals is
@@ -298,7 +317,7 @@ begin
             -- EX stage control signals
             led(1 downto 0) <=id_ex_control.RegDest;
             led(2) <= id_ex_control.AluSrc;
-            led(6 downto 3) <= std_logic_vector(to_unsigned(t_alu_op'pos(id_ex_control.AluOp), 4)); -- alu op
+            led(6 downto 3) <= "0000";
             led(8 downto 7) <= id_ex_control.ShiftVar;
             led(15 downto 9) <= (others => '0');
         when 2 =>
@@ -328,8 +347,6 @@ rt_ext(31 downto 5) <= (others => '0');
 RegWriteAddr_ext(4 downto 0) <= RegWriteAddr;
 RegWriteAddr_ext(31 downto 5) <= (others => '0');
 
-select_displayed_data <= to_integer(unsigned(sw(15 downto 3)));
-
 displayed_data <= if_id_pc          when select_displayed_data = 0 else
                   branch_address    when select_displayed_data = 1 else
                   jump_address      when select_displayed_data = 2 else
@@ -347,18 +364,5 @@ displayed_data <= if_id_pc          when select_displayed_data = 0 else
                   RegWriteAddr_ext  when select_displayed_data = 14 else
                   RegWriteData      when select_displayed_data = 15;
               
--- select the lower or higher 16 bits of the displayed data as the SSD can only display 4 hexadecimal digits at once
--- When the sw[2] is turned on, the higher part of the data is being displayed (the first 16 bits), and when turnde off, the lower part of the data is shown.               
-HighOrLowWord <= sw(2);
-                      
-data_word <= displayed_data(15 downto 0) when HighOrLowWord = '0' else displayed_data(31 downto 16);
-                      
-SSD_DISPLAY: SSD port map(
-    clk => clk,
-    rst => rst,
-    data => data_word,
-    an => an,
-    cat => seg
-);                   
-                  
+
 end Behavioral;
