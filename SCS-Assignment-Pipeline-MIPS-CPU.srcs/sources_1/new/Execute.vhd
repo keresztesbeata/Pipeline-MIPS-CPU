@@ -6,6 +6,7 @@ use work.MipsDefinitions.all;
 entity Execute is
   Port ( 
       clk:                  in std_logic;
+      en:                   in std_logic;
       Flush:                in std_logic;
       ex_control:           in t_ex_control_signals;
       mem_control:          in t_mem_control_signals;
@@ -70,12 +71,14 @@ begin
         ex_mem_control <= (MemRead => '0', MemWrite => '0', SB => '0', LB => '0');
         ex_wb_control <= (RegWrite => '0', LinkRetAddr => '0', MemToReg => "000");
     elsif rising_edge(clk) then
-        ex_mem_pc <= pc;
-        ex_mem_AluResult <= alu_result;
-        ex_mem_B <= B;
-        ex_mem_RegWriteAddr <= reg_write_addr;
-        ex_mem_control <= mem_control;
-        ex_wb_control <= wb_control;
+        if(en = '1') then
+            ex_mem_pc <= pc;
+            ex_mem_AluResult <= alu_result;
+            ex_mem_B <= B;
+            ex_mem_RegWriteAddr <= reg_write_addr;
+            ex_mem_control <= mem_control;
+            ex_wb_control <= wb_control;
+        end if;    
     end if;   
 end process;    
 

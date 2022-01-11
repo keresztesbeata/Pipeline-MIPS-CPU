@@ -53,8 +53,10 @@ begin
         if_id_pc <= (others => '0');
         if_id_instruction <= (others => '0');
     elsif rising_edge(clk) then
-        if_id_pc <= pc; 
-        if_id_instruction <= instr_mem(conv_integer(pc));
+        if(PCWrite = '1') then
+            if_id_pc <= pc_in; 
+            if_id_instruction <= instr_mem(conv_integer(pc));
+        end if;    
     end if;   
 end process;
 

@@ -5,8 +5,6 @@ use work.MipsDefinitions.all;
 
 entity ControlUnit is
   Port ( 
-      clk:               in std_logic;
-      rst:               in std_logic;
       instruction:       in std_logic_vector(31 downto 0);
       if_control:        out t_if_control_signals;
       id_control:        out t_id_control_signals;
@@ -61,7 +59,7 @@ end computeInstructionIndex;
 
 begin
 
-CONTROL_LOGIC: process(rst, instruction)
+CONTROL_LOGIC: process(instruction)
 variable opcode, func:    std_logic_vector(5 downto 0);
 variable instr: t_instr := i_NOP;
 begin   

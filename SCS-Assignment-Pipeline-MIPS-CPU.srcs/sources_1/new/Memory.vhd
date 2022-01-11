@@ -6,6 +6,7 @@ use work.MipsDefinitions.all;
 entity Memory is
   Port ( 
       clk:                in std_logic;
+      en:                 in std_logic;
       rst:                in std_logic;
       Flush:              in std_logic;
       mem_control:        in t_mem_control_signals;
@@ -41,7 +42,7 @@ begin
     if rst = '1' then
         data_mem <= c_data_mem_init_data;
     elsif rising_edge(clk) then
-        if mem_control.MemWrite = '1' then   
+        if en = '1' and mem_control.MemWrite = '1' then   
             data_mem(conv_integer(AluResult)) <= mem_write_byte_data;
         end if;
     end if;   
@@ -62,14 +63,16 @@ begin
         mem_wb_RegWriteAddr <= (others => '0');
         mem_wb_control <= (RegWrite => '0', LinkRetAddr => '0', MemToReg => "000");
     elsif rising_edge(clk) then
-        mem_wb_pc <= pc;
-        mem_wb_AluResult <= AluResult;
-        mem_wb_MemData <= mem_read_byte_data;
-        mem_wb_MemDataInc <= mem_read_data + 1;
-        mem_wb_Binc <= B + 1;
-        mem_wb_MemDataAdded <= mem_read_data + B;
-        mem_wb_RegWriteAddr <= RegWriteAddr;
-        mem_wb_control <= wb_control;
+        if en = '1' then
+            mem_wb_pc <= pc;
+            mem_wb_AluResult <= AluResult;
+            mem_wb_MemData <= mem_read_byte_data;
+            mem_wb_MemDataInc <= mem_read_data + 1;
+            mem_wb_Binc <= B + 1;
+            mem_wb_MemDataAdded <= mem_read_data + B;
+            mem_wb_RegWriteAddr <= RegWriteAddr;
+            mem_wb_control <= wb_control;
+         end if;    
    end if;         
 end process;
 

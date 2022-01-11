@@ -37,6 +37,7 @@ end component;
 component InstructionDecode is
  Port (
       clk:               in std_logic;
+      en:                in std_logic;
       rst:               in std_logic;
       Flush:             in std_logic;
       RegWrite:          in std_logic; -- comes from WB pipeline stage
@@ -65,6 +66,7 @@ end component;
 component Execute is
  Port ( 
       clk:                  in std_logic;
+      en:                   in std_logic;
       Flush:                in std_logic;
       ex_control:           in t_ex_control_signals;
       mem_control:          in t_mem_control_signals;
@@ -88,6 +90,7 @@ end component;
 component Memory is
   Port ( 
       clk:                in std_logic;
+      en:                 in std_logic;
       rst:                in std_logic;
       Flush:              in std_logic;
       mem_control:        in t_mem_control_signals;
@@ -152,7 +155,7 @@ signal PCSrc:                                             std_logic;
 signal A, B, imm:                                         std_logic_vector(31 downto 0);
 signal sa:                                                std_logic_vector(4 downto 0);
 signal rt, rd:                                            std_logic_vector(4 downto 0);
-signal rs_ext, rt_ext:                                    std_logic_vector(31 downto 0);
+signal rd_ext, rt_ext:                                    std_logic_vector(31 downto 0);
 signal AluResult, mem_wb_AluResult:                       std_logic_vector(31 downto 0);
 signal MemWriteData:                                      std_logic_vector(31 downto 0);  
 signal ex_mem_RegWriteAddr:                               std_logic_vector(4 downto 0);
@@ -204,6 +207,7 @@ IF_STAGE: InstructionFetch port map (
 
 ID_STAGE: InstructionDecode port map (
       clk => clk,
+      en => en_pc,
       rst => rst,
       Flush => Flush,
       RegWrite => mem_wb_control.RegWrite,
@@ -230,6 +234,7 @@ ID_STAGE: InstructionDecode port map (
       
 EX_STAGE: Execute port map(
       clk => clk,
+      en => en_pc,
       Flush => Flush,
       ex_control => id_ex_control,
       mem_control => id_mem_control,
@@ -251,6 +256,7 @@ EX_STAGE: Execute port map(
 
 MEM_STAGE: Memory port map( 
       clk => clk,
+      en => en_pc,
       rst => rst,
       Flush => Flush,
       mem_control => ex_mem_control,
@@ -280,7 +286,7 @@ WB_STAGE: WriteBack port map(
       RegWriteData => RegWriteData
 );    
 
-select_control_signals <= to_integer(unsigned(sw(1 downto 0)));
+select_control_signals <= to_integer(unsigned(sw(6 downto 5)));
 
 process(select_control_signals, if_control, id_ex_control, ex_mem_control, mem_wb_control)
 begin
@@ -305,8 +311,8 @@ begin
             -- MEM stage control signals
             led(0) <= ex_mem_control.MemRead;
             led(1) <= ex_mem_control.MemWrite;
-            led(2) <= ex_mem_control.SB;
-            led(3) <= ex_mem_control.LB;
+            led(2) <= ex_mem_control.LB;
+            led(3) <= ex_mem_control.SB;
             led(15 downto 4) <= (others => '0');
         when others =>
             -- WB stage control signals
@@ -319,8 +325,8 @@ end process;
 
 -- extend the register addresses to display them on the SSD
 
-rs_ext(4 downto 0) <= instruction(25 downto 21);
-rs_ext(31 downto 5) <= (others => '0');
+rd_ext(4 downto 0) <= rd;
+rd_ext(31 downto 5) <= (others => '0');
 
 rt_ext(4 downto 0) <= rt;
 rt_ext(31 downto 5) <= (others => '0');
@@ -328,14 +334,14 @@ rt_ext(31 downto 5) <= (others => '0');
 RegWriteAddr_ext(4 downto 0) <= RegWriteAddr;
 RegWriteAddr_ext(31 downto 5) <= (others => '0');
 
-select_displayed_data <= to_integer(unsigned(sw(15 downto 3)));
+select_displayed_data <= to_integer(unsigned(sw(3 downto 0)));
 
 displayed_data <= if_id_pc          when select_displayed_data = 0 else
                   branch_address    when select_displayed_data = 1 else
                   jump_address      when select_displayed_data = 2 else
                   reg_address       when select_displayed_data = 3 else
-                  rs_ext            when select_displayed_data = 4 else
-                  rt_ext            when select_displayed_data = 5 else
+                  rt_ext            when select_displayed_data = 4 else
+                  rd_ext            when select_displayed_data = 5 else
                   A                 when select_displayed_data = 6 else
                   B                 when select_displayed_data = 7 else
                   imm               when select_displayed_data = 8 else
@@ -349,7 +355,7 @@ displayed_data <= if_id_pc          when select_displayed_data = 0 else
               
 -- select the lower or higher 16 bits of the displayed data as the SSD can only display 4 hexadecimal digits at once
 -- When the sw[2] is turned on, the higher part of the data is being displayed (the first 16 bits), and when turnde off, the lower part of the data is shown.               
-HighOrLowWord <= sw(2);
+HighOrLowWord <= sw(4);
                       
 data_word <= displayed_data(15 downto 0) when HighOrLowWord = '0' else displayed_data(31 downto 16);
                       

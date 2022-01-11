@@ -6,6 +6,7 @@ use work.MipsDefinitions.all;
 entity InstructionDecode is
   Port (
       clk:               in std_logic;
+      en:                in std_logic;
       rst:               in std_logic;
       Flush:             in std_logic;
       RegWrite:          in std_logic; -- comes from WB pipeline stage
@@ -34,16 +35,14 @@ end InstructionDecode;
 architecture Behavioral of InstructionDecode is
 
 component ControlUnit is
-  Port ( 
-      clk:               in std_logic;
-      rst:               in std_logic;
+   Port ( 
       instruction:       in std_logic_vector(31 downto 0);
       if_control:        out t_if_control_signals;
       id_control:        out t_id_control_signals;
       ex_control:        out t_ex_control_signals;
       mem_control:       out t_mem_control_signals;
       wb_control:        out t_wb_control_signals  
-      );    
+      );      
 end component;      
 
 component Comparator
@@ -71,8 +70,6 @@ signal wb_control:              t_wb_control_signals;
 begin
 
 CU: ControlUnit port map( 
-      clk => clk,
-      rst => rst,
       instruction => instruction,
       if_control => if_control,
       id_control => id_control,
@@ -108,7 +105,7 @@ begin
     if rst = '1' then
        reg_file_data <= c_reg_file_init_data;
     elsif falling_edge(clk) then
-       if RegWrite = '1' then
+       if en = '1' and RegWrite = '1' then
           reg_file_data(conv_integer(write_addr)) <= write_data;
        end if;
     end if;        
@@ -130,16 +127,18 @@ begin
        id_ex_rt <= (others => '0');
        id_ex_rd <= (others => '0');
     elsif rising_edge(clk) then
-       id_ex_pc <= pc + 1;
-       id_ex_A <= read_data0;
-       id_ex_B <= read_data1;
-       id_ex_imm <= ext_imm;
-       id_ex_sa <= instruction(10 downto 6);
-       id_ex_rt <= instruction(20 downto 16);
-       id_ex_rd <= instruction(15 downto 11);
-       id_ex_control <= ex_control;
-       id_mem_control <= mem_control;
-       id_wb_control <= wb_control;
+       if(en = '1') then
+           id_ex_pc <= pc;
+           id_ex_A <= read_data0;
+           id_ex_B <= read_data1;
+           id_ex_imm <= ext_imm;
+           id_ex_sa <= instruction(10 downto 6);
+           id_ex_rt <= instruction(20 downto 16);
+           id_ex_rd <= instruction(15 downto 11);
+           id_ex_control <= ex_control;
+           id_mem_control <= mem_control;
+           id_wb_control <= wb_control;
+       end if;    
     end if;             
 end process;
 

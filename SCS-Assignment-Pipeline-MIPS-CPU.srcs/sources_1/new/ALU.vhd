@@ -29,8 +29,8 @@ begin
     b_unsigned := unsigned(b);
     a_signed := signed(a);
     b_signed := signed(b);
-    
     rot_amount := to_integer(unsigned(b));
+    
     case AluOp is
         when op_OR => 
             result <= a or b;
@@ -50,12 +50,12 @@ begin
             result <= std_logic_vector(result_unsigned);
             
         when op_ROL =>    
-            result_unsigned := rotate_left(a_unsigned, rot_amount);
-            result <= std_logic_vector(result_unsigned);
+            result_signed := rotate_left(a_signed, rot_amount);
+            result <= std_logic_vector(result_signed);
             
         when op_ROR => 
-            result_unsigned := rotate_right(a_unsigned, rot_amount);
-            result <= std_logic_vector(result_unsigned);    
+            result_signed := rotate_right(a_signed, rot_amount);
+            result <= std_logic_vector(result_signed);    
             
         when op_ADD =>
             result_signed := a_signed + b_signed;
